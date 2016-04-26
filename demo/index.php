@@ -27,7 +27,7 @@
 
     <form method="POST" enctype='multipart/form-data' action='.'>
       <label>Path : </label>
-      <input type="text" name="path" placeholder="scenario_1/uploads/" style='width:800px'/>
+      <input type="text" name="path" placeholder="uploads/" style='width:800px'/>
 
       <br/>
 
@@ -39,7 +39,7 @@
       <input type="submit" value="Upload">
     </form>
 
-    <a href="/scenario_1/override_me.php">override_me</a>
+    <a href="/override_me.php">override_me</a>
   </body>
 </html>
 
