@@ -115,7 +115,7 @@ typedef struct zend_arg_info {
 
     // Class name
     if (name_pos != 0) {
-        local int curr_pos = FTell();
+        curr_pos = FTell();
         FSeek(class_name_pos + sizeof(_meta));
         _string class_name;
         FSeek(curr_pos);
