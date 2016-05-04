@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Copyright (c) 2016 GoSecure Inc.
+
 from construct import *
 from definitions import *
 

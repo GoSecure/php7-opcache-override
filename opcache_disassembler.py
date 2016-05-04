@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Copyright (c) 2016 GoSecure Inc.
+
 from __future__ import unicode_literals
 from opcache_parser import *
 from treelib import Node, Tree
