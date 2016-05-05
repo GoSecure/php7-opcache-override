@@ -25,6 +25,30 @@ Simply pass a filename or a URL.
     ------------
     System ID : 81d80d78c6ef96b89afaadc7ffc5d7ea
 
+## OPcache Disassembler
+This tool lets you disassemble an OPcache file.
+
+You can display it as a syntax tree (-t) or pseudocode (-c).
+Simply pass a display option and an OPcache file.
+
+    $ ./opcache_disassembler.py -c malware.php.bin
+    
+    #0 $280 = FETCH_IS('_GET', None);
+    #1 ~0 = ISSET_ISEMPTY_DIM_OBJ($280, 'test');
+    #2 JMPZ(~408, ->5);
+    #3 ECHO('success', None);
+    ...
+
+
+## OPcache Malware Detect
+This tool helps detect malware hidden in OPcache files by searching specific keywords in the file's opcodes.
+
+Pass an OPcache file or directory and the detector will recursively go through all the `.php.bin` files.
+
+    $ ./opcache_malware_detect.py malware.php.bin
+    Checking malware.php.bin
+    	Found potentially dangerous keyword 'preg_replace'.
+    	Found potentially dangerous keyword 'str_rot13'.
 
 ## Demo
 To setup the demo, run the following two commands : 
