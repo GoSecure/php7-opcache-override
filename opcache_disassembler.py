@@ -67,7 +67,7 @@ class OPcacheDisassembler():
         line = re.sub("(!\d+)", colored('\\1', 'yellow'), line)
 
         # Strings
-        line = re.sub("'(.*)'", colored("'\\1'", 'blue'), line)
+        line = re.sub("['\"](.+)['\"]", colored("'\\1'", 'blue'), line)
 
         return line
 
