@@ -1,1 +1,3 @@
 *.pyc
+*.tmp
+hunt_opcache
