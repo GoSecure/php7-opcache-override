@@ -5,6 +5,8 @@
 from construct import *
 from definitions import *
 
+meta = None
+
 def unserialize_zend_function():
     return Zend_Op_Array("op_array")
 
@@ -30,8 +32,11 @@ def Z_Val(name, callback = None, unserialize = True):
                   ULInt32("u2"),
 
                   If(lambda z: z.u1.type == 6 and unserialize,
-                     Pointer(lambda z: z.value.w1 + Struct.sizeof(Meta), Zend_String("string"))
-                  ),
+                     OnDemand(Pointer(lambda z: (z.value.w1 & ~1) +
+                                      (meta['mem_size'] if meta['str_size'] != 0 else 0) +
+                                      Struct.sizeof(Meta),
+                                      Zend_String("string"))
+                  )),
                   If(lambda z: z.u1.type == 17 and unserialize,
                      Pointer(lambda z: z.value.w1 + Struct.sizeof(Meta), callback()))
                   )
@@ -42,7 +47,7 @@ def Pointer_To(name, structure):
                   ULInt32("position"),
                   IfThenElse(structure.name, lambda z: z.position == 0,
                             Empty(),
-                            Pointer(lambda z: z.position + Struct.sizeof(Meta), structure))
+                            Pointer(lambda z: (z.position & ~1) + Struct.sizeof(Meta), structure))
                   )
 
 def Zend_Class_Entry(name):
@@ -99,7 +104,8 @@ def Hash_Table(name, callback = None):
                   Pointer(lambda z: z.bucket_pos + Struct.sizeof(Meta),
                     Array(lambda z: z.nNumUsed,
                       Bucket("buckets", callback)
-                  )))
+                  ))
+                  )
 
 def Zend_Value(name):
     return Struct(name,
@@ -172,8 +178,8 @@ def Zend_Op_Array(name):
                     Pointer(lambda z: z.vars_pos_pos + Struct.sizeof(Meta),
                             Array(lambda z: z.last_var,
                                 Struct("vars",
-                                       ULInt32("pos"),
-                                       Pointer(lambda v: v.pos + Struct.sizeof(Meta), Zend_String("var")))
+                                       ULInt32("pos"))
+                                       #Pointer(lambda v: v.pos + Struct.sizeof(Meta), Zend_String("var")))
                             )
                     ),
                     ULInt32("last_live_range"),
@@ -306,7 +312,7 @@ class OPcodeParser():
         # Interpret the z_val
         if op_type == IS_CONST:
             if type == IS_STRING:
-                return repr(Zend_String("val").parse(self.stream[w1 + size_of_meta:])['val'])
+                return repr(Zend_String("val").parse(self.stream[(w1 & ~1) + (meta['mem_size'] if meta['str_size'] != 0 else 0) + size_of_meta:])['val'])
 
             if type == IS_LONG:
                 return str(w1)
@@ -343,6 +349,9 @@ class OPcacheParser():
             self.stream = file.read()
 
         self.parsed = OPcacheParser.parse_stream(self.stream)
+
+        global meta
+        meta = self.parsed['meta']
 
     def __getitem__(self, index):
         return self.parsed[index]
