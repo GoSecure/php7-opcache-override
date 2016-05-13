@@ -193,8 +193,10 @@ def Zend_Op_Array(name):
                     Pointer(lambda z: z.vars_pos_pos + Struct.sizeof(Meta),
                             Array(lambda z: z.last_var,
                                 Struct("vars",
-                                       ULInt32("pos"))
-                                       #Pointer(lambda v: v.pos + Struct.sizeof(Meta), Zend_String("var")))
+                                       ULInt32("pos"),
+                                       Pointer(lambda v: (v.pos & ~1) +
+                                       (meta['mem_size'] if meta['str_size'] != 0 else 0) +
+                                       Struct.sizeof(Meta), Zend_String("var")))
                             )
                     ),
                     ULInt32("last_live_range"),
