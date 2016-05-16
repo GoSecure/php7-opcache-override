@@ -106,7 +106,7 @@ class OPcacheDisassembler():
                 line += self.convert_branch_to_pseudo_code(root, child_nid, indentation) + "\n"
                 indentation -= 2
 
-                line += " " *  indentation + "}"
+                line += " " *  indentation + "}\n"
 
         return line
 
@@ -140,8 +140,7 @@ class OPcacheDisassembler():
         # Final formatting
         line += "{0}({1}, {2});".format(op_name, param1, param2)
 
-        # Syntax highlighting
-        return self.syntax_highlight(line)
+        return line
 
     def create_ast(self, filename):
         """ Create an ast for a given file
@@ -231,12 +230,23 @@ class OPcacheDisassembler():
 
         ast.show(key=lambda a: "")
 
+    def disassemble(self, file):
+        disassembler = OPcacheDisassembler()
+        ast = disassembler.create_ast(file)
+        final = ""
+        final += disassembler.convert_branch_to_pseudo_code(ast, 'class_table', 0)
+        final += disassembler.convert_branch_to_pseudo_code(ast, 'function_table', 0)
+        final += disassembler.convert_branch_to_pseudo_code(ast, 'main_op_array', 0)
+
+        return final
+
 def show_help():
     """ Show the help menu """
 
     print "Usage : {0} [-tc] [file]".format(sys.argv[0])
     print " " * 4 + "-t Print syntax tree"
     print " " * 4 + "-c Print pseudocode"
+
 
 if __name__ == "__main__":
 

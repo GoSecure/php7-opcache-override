@@ -41,14 +41,42 @@ Simply pass a display option and an OPcache file.
 
 
 ## OPcache Malware Hunter
-This tool helps detect malware hidden in OPcache files by searching specific keywords in the file's opcodes.
+This tool helps detect malware hidden in OPcache files by looking for manipulated OPcache files. It compiles its own version of the source code, compares the compiled file
+with the current cache file and checks for differences. **You must run this tool on the same system as the one where the cache files
+have been compiled originally.**
 
-Pass an OPcache file or directory and the hunter will recursively go through all the `.php.bin` files.
+OPcache malware hunter requires three parameters :
+  - The location of the cache folder
+  - The system_id
+  - The php.ini file used
 
-    $ ./opcache_malware_hunt.py malware.php.bin
-    Checking malware.php.bin
-      Found potentially dangerous keyword 'preg_replace'.
-      Found potentially dangerous keyword 'str_rot13'.
+  In the situation where a potentially infected cache file is found, OPcache Malware Hunter will generate an HTML report
+  in the filesystem showing the differences between the source code and the infected cache file.
+ 
+
+ ```
+ $ ./opcache_malware_hunt.py /tmp/cache 2d3b19863f4c71f9a3adda4c957752e2 /etc/php/7.0/cli/php.ini
+ Parsing /tmp/cache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/payload.php.bin
+ Parsing hunt_opcache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/payload.php.bin
+ Parsing /tmp/cache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/wp-config.php.bin
+ Parsing hunt_opcache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/wp-config.php.bin
+ Parsing /tmp/cache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/wp-load.php.bin
+ ...
+ Parsing /tmp/cache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/index.php.bin
+ Parsing hunt_opcache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/index.php.bin
+ Parsing /tmp/cache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/wp-includes/pomo/translations.php.bin
+ Parsing hunt_opcache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/wp-includes/pomo/translations.php.bin
+ Potentially infected files :
+  - /tmp/cache/2d3b19863f4c71f9a3adda4c957752e2/home/vagrant/wordpress/index.php.bin
+ ```
+
+Main page of generated report : 
+
+<img src="https://raw.githubusercontent.com/GoSecure/php7-opcache-override/ib-malware-hunt-rework/static/index.png" width="500px">
+
+A typical report page : 
+
+![diff](https://raw.githubusercontent.com/GoSecure/php7-opcache-override/ib-malware-hunt-rework/static/diff.png)
 
 ## Demo
 To setup the demo, run the following two commands :
