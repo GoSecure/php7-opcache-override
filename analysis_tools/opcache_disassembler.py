@@ -217,9 +217,14 @@ class OPcacheDisassembler():
                 ast : The syntax tree to print
         """
 
-        print self.convert_branch_to_pseudo_code(ast, 'class_table', 0)
-        print self.convert_branch_to_pseudo_code(ast, 'function_table', 0)
-        print self.convert_branch_to_pseudo_code(ast, 'main_op_array', 0)
+        for line in self.convert_branch_to_pseudo_code(ast, 'class_table', 0).split("\n"):
+            print self.syntax_highlight(line)
+
+        for line in  self.convert_branch_to_pseudo_code(ast, 'function_table', 0).split("\n"):
+            print self.syntax_highlight(line)
+
+        for line in self.convert_branch_to_pseudo_code(ast, 'main_op_array', 0).split("\n"):
+            print self.syntax_highlight(line)
 
     def print_syntax_tree(self, ast):
         """ Print the syntax tree
