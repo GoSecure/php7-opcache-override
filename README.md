@@ -72,11 +72,11 @@ OPcache malware hunter requires three parameters :
 
 Main page of generated report : 
 
-<img src="https://raw.githubusercontent.com/GoSecure/php7-opcache-override/ib-malware-hunt-rework/static/index.png" width="500px">
+<img src="https://raw.githubusercontent.com/GoSecure/php7-opcache-override/master/static/index.png" width="500px">
 
 A typical report page : 
 
-![diff](https://raw.githubusercontent.com/GoSecure/php7-opcache-override/ib-malware-hunt-rework/static/diff.png)
+![diff](https://raw.githubusercontent.com/GoSecure/php7-opcache-override/master/static/diff.png)
 
 ## Demo
 To setup the demo, run the following two commands :
