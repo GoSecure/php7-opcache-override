@@ -24,12 +24,12 @@ def Z_Val(name, callback = None, unserialize = True):
     return Struct(name,
                   Zend_Value("value"),
                   Struct("u1",
-                         Byte("type"),
-                         Byte("type_flags"),
-                         Byte("const_flags"),
-                         Byte("reserved")
+                         "type" / Byte,
+                         "type_flags" / Byte,
+                         "const_flags" / Byte,
+                         "reserved"/ Byte
                   ),
-                  ULInt32("u2"),
+                  "u2" / Int32ul,
 
                   If(lambda z: z.u1.type == 6 and unserialize,
                      Pointer(lambda z: (z.value.w1 & ~1) +
@@ -46,16 +46,15 @@ def Pointer_To(name, structure, interned = True):
 
     if not interned:
       return Struct(name,
-                    ULInt32("position"),
-                    IfThenElse(structure.name, lambda z: z.position == 0,
-                              Empty(),
+                    "position" / Int32ul,
+                    structure.name / IfThenElse(lambda z: z.position == 0, Empty(),
                               Pointer(lambda z: (z.position & ~1) +
                                       Struct.sizeof(Meta), structure)
                     ))
 
     return Struct(name,
-                  ULInt32("position"),
-                  IfThenElse(structure.name, lambda z: z.position == 0,
+                  "position" / Int32ul,
+                  structure.name / IfThenElse(lambda z: z.position == 0,
                             Empty(),
                             Pointer(lambda z: (z.position & ~1) +
                                     (meta['mem_size'] if meta['str_size'] != 0 else 0) +
@@ -64,17 +63,17 @@ def Pointer_To(name, structure, interned = True):
 
 def Zend_Class_Entry(name):
     return Struct(name,
-                  Bytes("padding", 3),
-                  Byte("type"),
+                  "padding" / Bytes(3),
+                  "type" / Byte,
                   Pointer_To("name", Zend_String("name")),
-                  ULInt32("parent_pos"),
-                  ULInt32("refcount"),
-                  ULInt32("ce_flags"),
-                  ULInt32("default_properties_count"),
-                  ULInt32("default_static_members_count"),
-                  ULInt32("default_properties_table_pos"),
-                  ULInt32("default_static_members_table_pos"),
-                  ULInt32("static_members_table_pos"),
+                  "parent_pos" / Int32ul,
+                  "refcount" / Int32ul,
+                  "ce_flags" / Int32ul,
+                  "default_properties_count" / Int32ul,
+                  "default_static_members_count" / Int32ul,
+                  "default_properties_table_pos" / Int32ul,
+                  "default_static_members_table_pos" / Int32ul,
+                  "static_members_table_pos" / Int32ul,
                   Hash_Table("function_table", unserialize_zend_function),
                   Hash_Table("properties_table"),
                   Hash_Table("constants_table"))
@@ -95,8 +94,8 @@ def Zend_Function(name):
 def Bucket(name, callback = None):
     return Struct(name,
                   Z_Val("val", callback),
-                  ULInt32("h"),
-                  ULInt32("key_pos"),
+                  "h" / Int32ul,
+                  "key_pos" / Int32ul,
                   If(lambda z: z.val.u1.type != 0,
                      Pointer(lambda z: (z.key_pos & ~1) +
                              (meta['mem_size'] if meta['str_size'] != 0 else 0) +
@@ -106,15 +105,15 @@ def Bucket(name, callback = None):
 def Hash_Table(name, callback = None):
     return Struct(name,
                   Zend_Refcounted_H("gc"),
-                  ULInt32("flags"),
-                  ULInt32("nTableMask"),
-                  ULInt32("bucket_pos"),
-                  ULInt32("nNumUsed"),
-                  ULInt32("nNumOfElements"),
-                  ULInt32("nTableSize"),
-                  ULInt32("nInternalPointer"),
-                  ULInt32("nNextFreeElement"),
-                  ULInt32("pDestructor"),
+                  "flags" / Int32ul,
+                  "nTableMask" / Int32ul,
+                  "bucket_pos" / Int32ul,
+                  "nNumUsed" / Int32ul,
+                  "nNumOfElements" / Int32ul,
+                  "nTableSize" / Int32ul,
+                  "nInternalPointer" / Int32ul,
+                  "nNextFreeElement" / Int32ul,
+                  "pDestructor" / Int32ul,
                   Pointer(lambda z: z.bucket_pos + Struct.sizeof(Meta),
                     Array(lambda z: z.nNumUsed,
                       Bucket("buckets", callback)
@@ -123,102 +122,102 @@ def Hash_Table(name, callback = None):
 
 def Zend_Value(name):
     return Struct(name,
-                  ULInt32("w1"),
-                  ULInt32("w2"))
+                  "w1" / Int32ul,
+                  "w2" / Int32ul)
 
 
 def Zend_Refcounted_H(name):
     return  Struct(name,
-                   ULInt32("refcount"),
-                   ULInt32("typeinfo"))
+                   "refcount" / Int32ul,
+                   "typeinfo" / Int32ul)
 
 
 def Zend_String(name):
     return Struct(name,
                   Zend_Refcounted_H("gc"),
-                  ULInt32("h"),
-                  ULInt32("len"),
+                  "h" / Int32ul,
+                  "len" / Int32ul,
                   String("val", lambda zs: zs.len))
 
 def Zend_Arg_Info(name):
     return Struct(name,
                   Pointer_To("name", Zend_String("name")),
                   Pointer_To("class_name", Zend_String("class_name")),
-                  ULInt32("class_name_pos"),
-                  Byte("type_hint"),
-                  Byte("pass_by_reference"),
-                  Byte("allow_null"),
-                  Byte("is_variadic"))
+                  "class_name_pos" / Int32ul,
+                  "type_hint" / Byte,
+                  "pass_by_reference" / Byte,
+                  "allow_null" / Byte,
+                  "is_variadic" / Byte)
 
 def Z_Node_Op(name):
     return Struct(name,
-                  ULInt32("val"))
+                  "val" / Int32ul)
 
 def Zend_Op(name):
     return Struct(name,
-                  ULInt32("handler"),
+                  "handler" / Int32ul,
                   Z_Node_Op("op1"),
                   Z_Node_Op("op2"),
                   Z_Node_Op("result"),
-                  ULInt32("extended_value"),
-                  ULInt32("lineno"),
-                  Byte("opcode"),
-                  Byte("op1_type"),
-                  Byte("op2_type"),
-                  Byte("result_type"))
+                  "extended_value" / Int32ul,
+                  "lineno" / Int32ul,
+                  "opcode" / Byte,
+                  "op1_type" / Byte,
+                  "op2_type" / Byte,
+                  "result_type" / Byte)
 
 def Zend_Op_Array(name):
     return Debugger(Struct(name,
-                    Byte("type"),
-                    Bytes("arg_flags", 3),
-                    ULInt32("fn_flags"),
+                    "type" / Byte,
+                    "arg_flags" /  Bytes(3),
+                    "fn_flags" / Int32ul,
                     Pointer_To("function_name", Zend_String("function_name")),
-                    ULInt32("scope_pos"),
+                    "scope_pos" / Int32ul,
                     Pointer_To("prototype", Zend_String("prototype")),
-                    ULInt32("num_args"),
-                    ULInt32("required_num_args"),
+                    "num_args" / Int32ul,
+                    "required_num_args" / Int32ul,
                     Pointer_To("arg_info", Zend_Arg_Info("arg_info"), False),
-                    ULInt32("refcount"),
-                    ULInt32("this_var"),
-                    ULInt32("last"),
-                    ULInt32("opcodes_pos"),
+                    "refcount" / Int32ul,
+                    "this_var" / Int32ul,
+                    "last" / Int32ul,
+                    "opcodes_pos" / Int32ul,
                     Pointer(lambda z: z.opcodes_pos + Struct.sizeof(Meta),
                             Array(lambda z: z.last,
                                   Zend_Op("opcodes")
                             )
                     ),
-                    ULInt32("last_var"),
-                    ULInt32("T"),
-                    ULInt32("vars_pos_pos"),
+                    "last_var" / Int32ul,
+                    "T" / Int32ul,
+                    "vars_pos_pos" / Int32ul,
                     Pointer(lambda z: z.vars_pos_pos + Struct.sizeof(Meta),
                             Array(lambda z: z.last_var,
                                 Struct("vars",
-                                       ULInt32("pos"),
+                                       "pos" / Int32ul,
                                        Pointer(lambda v: (v.pos & ~1) +
                                        (meta['mem_size'] if meta['str_size'] != 0 else 0) +
                                        Struct.sizeof(Meta), Zend_String("var")))
                             )
                     ),
-                    ULInt32("last_live_range"),
-                    ULInt32("last_try_catch"),
-                    ULInt32("live_range_pos"),
-                    ULInt32("try_catch_array_pos"),
+                    "last_live_range" / Int32ul,
+                    "last_try_catch" / Int32ul,
+                    "live_range_pos" / Int32ul,
+                    "try_catch_array_pos" / Int32ul,
                     Pointer_To("static_variables", Hash_Table("static_variables"), False),
                     Pointer_To("filename", Zend_String("filename"), False),
-                    ULInt32("line_start"),
-                    ULInt32("line_end"),
+                    "line_start" / Int32ul,
+                    "line_end" / Int32ul,
                     Pointer_To("doc_comment", Zend_String("doc_comment"), False),
-                    ULInt32("early_binding"),
-                    ULInt32("last_literals"),
-                    ULInt32("literals_pos"),
+                    "early_binding" / Int32ul,
+                    "last_literals" / Int32ul,
+                    "literals_pos" / Int32ul,
                     Pointer(lambda z: z.literals_pos + Struct.sizeof(Meta),
                             Array(lambda z: z.last_literals,
                                   Z_Val("literals")
                             )
                     ),
-                    ULInt32("cache_size"),
-                    ULInt32("runtime_size"),
-                    Array(4, ULInt32("reserved"))))
+                    "cache_size" / Int32ul,
+                    "runtime_size" / Int32ul,
+                    Array(4, "reserved" / Int32ul)))
 
 Script = Struct("script",
                 Pointer_To("filename", Zend_String("filename"), False),
@@ -229,11 +228,11 @@ Script = Struct("script",
 Meta = Struct("meta",
               String("magic", 8),
               String("system_id", 32),
-              ULInt32("mem_size"),
-              ULInt32("str_size"),
-              ULInt32("script_offset"),
-              ULInt32("timestamp"),
-              ULInt32("checksum"))
+              "mem_size" / Int32ul,
+              "str_size" / Int32ul,
+              "script_offset" / Int32ul,
+              "timestamp" / Int32ul,
+              "checksum" / Int32ul)
 
 OPcache = Struct("OPcache",
                  Meta,
