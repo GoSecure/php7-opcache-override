@@ -23,9 +23,9 @@ def Z_Val(name, callback = None, unserialize = True):
 
     callback_name = ""
     if callback == unserialize_zend_function:
-	callback_name = "op_array"
+        callback_name = "op_array"
     elif callback == unserialize_class:
-        callback_name = "class"
+        callback_name = "class`"
 
     return name / Struct(Zend_Value("value"),
                   "u1" / Struct("type" / Byte,
@@ -49,13 +49,13 @@ def Pointer_To(name, structure, interned = True):
     structure.name = "value"
 
     if not interned:
-      return name / Struct("position" / Int32ul,
+      return name / Struct("position" / Int64ul,
                     structure.name / IfThenElse(lambda z: z.position == 0, Empty(),
                               Pointer(lambda z: (z.position & ~1) +
                                       Meta.sizeof(), structure)
                     ))
 
-    return name / Struct("position" / Int32ul,
+    return name / Struct("position" / Int64ul,
                   structure.name / IfThenElse(lambda z: z.position == 0,
                             Empty(),
                             Pointer(lambda z: (z.position & ~1) +
@@ -93,9 +93,9 @@ def Zend_Function(name):
 
 def Bucket(name, callback = None):
     return name / Struct(Z_Val("val", callback),
-                  "h" / Int32ul,
-                  "key_pos" / Int32ul,
-                  If(lambda z: z.val.u1.type != 0,
+                  "h" / Int64ul,
+                  "key_pos" / Int64ul,
+                  "key" / If(this.val.u1.type != 0,
                      Pointer(lambda z: (z.key_pos & ~1) +
                              (meta['mem_size'] if meta['str_size'] != 0 else 0) +
                              Meta.sizeof(), Zend_String("key"))
@@ -105,13 +105,13 @@ def Hash_Table(name, callback = None):
     return name / Struct(Zend_Refcounted_H("gc"),
                   "flags" / Int32ul,
                   "nTableMask" / Int32ul,
-                  "bucket_pos" / Int32ul,
+                  "bucket_pos" / Int64ul,
                   "nNumUsed" / Int32ul,
                   "nNumOfElements" / Int32ul,
                   "nTableSize" / Int32ul,
                   "nInternalPointer" / Int32ul,
-                  "nNextFreeElement" / Int32ul,
-                  "pDestructor" / Int32ul,
+                  "nNextFreeElement" / Int64ul,
+                  "pDestructor" / Int64ul,
                   Pointer(lambda z: z.bucket_pos + Meta.sizeof(),
                     Array(lambda z: z.nNumUsed,
                       Bucket("buckets", callback)
@@ -130,8 +130,8 @@ def Zend_Refcounted_H(name):
 
 def Zend_String(name):
     return name / Struct(Zend_Refcounted_H("gc"),
-                  "h" / Int32ul,
-                  "len" / Int32ul,
+                  "h" / Int64ul,
+                  "len" / Int64ul,
                   "val" / String(this.len))
 
 def Zend_Arg_Info(name):
@@ -147,7 +147,7 @@ def Z_Node_Op(name):
     return name / Struct("val" / Int32ul)
 
 def Zend_Op(name):
-    return name / Struct("handler" / Int32ul,
+    return name / Struct("handler" / Int64ul,
                   Z_Node_Op("op1"),
                   Z_Node_Op("op2"),
                   Z_Node_Op("result"),
@@ -163,15 +163,15 @@ def Zend_Op_Array(name):
                     "arg_flags" /  Bytes(3),
                     "fn_flags" / Int32ul,
                     Pointer_To("function_name", Zend_String("function_name")),
-                    "scope_pos" / Int32ul,
+                    "scope_pos" / Int64ul,
                     Pointer_To("prototype", Zend_String("prototype")),
                     "num_args" / Int32ul,
                     "required_num_args" / Int32ul,
                     Pointer_To("arg_info", Zend_Arg_Info("arg_info"), False),
-                    "refcount" / Int32ul,
+                    "refcount" / Int64ul,
                     "this_var" / Int32ul,
                     "last" / Int32ul,
-                    "opcodes_pos" / Int32ul,
+                    "opcodes_pos" / Int64ul,
                     Pointer(lambda z: z.opcodes_pos + Meta.sizeof(),
                             Array(lambda z: z.last,
                                   Zend_Op("opcodes")
@@ -179,10 +179,10 @@ def Zend_Op_Array(name):
                     ),
                     "last_var" / Int32ul,
                     "T" / Int32ul,
-                    "vars_pos_pos" / Int32ul,
+                    "vars_pos_pos" / Int64ul,
                     Pointer(lambda z: z.vars_pos_pos + Meta.sizeof(),
                             Array(lambda z: z.last_var,
-                                "vars" / Struct("pos" / Int32ul,
+                                "vars" / Struct("pos" / Int64ul,
                                        Pointer(lambda v: (v.pos & ~1) +
                                        (meta['mem_size'] if meta['str_size'] != 0 else 0) +
                                        Meta.sizeof(), Zend_String("var")))
@@ -190,8 +190,8 @@ def Zend_Op_Array(name):
                     ),
                     "last_live_range" / Int32ul,
                     "last_try_catch" / Int32ul,
-                    "live_range_pos" / Int32ul,
-                    "try_catch_array_pos" / Int32ul,
+                    "live_range_pos" / Int64ul,
+                    "try_catch_array_pos" / Int64ul,
                     Pointer_To("static_variables", Hash_Table("static_variables"), False),
                     Pointer_To("filename", Zend_String("filename"), False),
                     "line_start" / Int32ul,
@@ -199,15 +199,15 @@ def Zend_Op_Array(name):
                     Pointer_To("doc_comment", Zend_String("doc_comment"), False),
                     "early_binding" / Int32ul,
                     "last_literals" / Int32ul,
-                    "literals_pos" / Int32ul,
+                    "literals_pos" / Int64ul,
                     Pointer(lambda z: z.literals_pos + Meta.sizeof(),
                             Array(lambda z: z.last_literals,
                                   Z_Val("literals")
                             )
                     ),
-                    "cache_size" / Int32ul,
-                    "runtime_size" / Int32ul,
-                    Array(4, "reserved" / Int32ul))
+                    "cache_size" / Int64ul,
+                    "runtime_size" / Int64ul,
+                    Array(4, "reserved" / Int64ul))
 
 Script = "script" / Struct(Pointer_To("filename", Zend_String("filename"), False),
                 Zend_Op_Array("main_op_array"),
@@ -216,11 +216,11 @@ Script = "script" / Struct(Pointer_To("filename", Zend_String("filename"), False
 
 Meta = "meta" / Struct("magic" / String(8),
               "system_id" / String(32),
-              "mem_size" / Int32ul,
-              "str_size" / Int32ul,
-              "script_offset" / Int32ul,
-              "timestamp" / Int32ul,
-              "checksum" / Int32ul)
+              "mem_size" / Int64ul,
+              "str_size" / Int64ul,
+              "script_offset" / Int64ul,
+              "timestamp" / Int64ul,
+              "checksum" / Int64ul)
 
 OPcache = "OPcache" / Struct(Meta,
                              Script)
@@ -263,7 +263,7 @@ class OPcodeParser():
 
         # Other jump instructions
         else:
-            op1 = self.parse_zval(op2_val, opcode['op1_type'])
+            op1 = self.parse_zval(op2_val, opcode['op1_type'], op_array)
             op2 = "->" + str((op2_val - opcodes_pos) / zend_op_size)
 
         return (op1, op2, "None")
@@ -284,13 +284,13 @@ class OPcodeParser():
             (op1, op2, result) = self.parse_jmp(opcode, op_array)
 
         else:
-            op1 = self.parse_zval(opcode['op1'].val, opcode['op1_type'])
-            op2 = self.parse_zval(opcode['op2'].val, opcode['op2_type'])
-            result = self.parse_zval(opcode['result'].val, opcode['result_type'])
+            op1 = self.parse_zval(opcode['op1'].val, opcode['op1_type'], op_array)
+            op2 = self.parse_zval(opcode['op2'].val, opcode['op2_type'], op_array)
+            result = self.parse_zval(opcode['result'].val, opcode['result_type'], op_array)
 
         return (op1, op2, result)
 
-    def parse_zval(self, offset, op_type):
+    def parse_zval(self, offset, op_type, op_array):
         """ Parse a zval at a offset for a given operand type
 
             Arguments :
@@ -302,8 +302,11 @@ class OPcodeParser():
         size_of_meta = Meta.sizeof()
 
         # If the offset is invalid, consider the operand as unused
+
         try:
-            zval = Z_Val("val", unserialize=False).parse(self.stream[offset + size_of_meta:])
+            #zval = Z_Val("val", unserialize=False).parse(self.stream[offset:])
+            zval = op_array["literals"][offset / 16]
+
         except:
             return "None"
 
