@@ -3,7 +3,8 @@
 # Copyright (c) 2016 GoSecure Inc.
 
 from __future__ import unicode_literals
-from opcache_parser import *
+import opcache_parser
+import opcache_parser_64
 from treelib import Node, Tree
 from termcolor import colored
 import re
@@ -12,7 +13,7 @@ import sys
 class OPcode(Tree):
     """ Tree representation of an OPcode """
 
-    def __init__(self, id, opcode, op_array, context):
+    def __init__(self, id, opcode, op_array, context, is_64_bit):
         """ Create a tree representaiton of an Opcode
 
             Arguments :
@@ -28,6 +29,11 @@ class OPcode(Tree):
         id_with_hash = str(hash(str(op_array))) + "_" + id
 
         # OP name
+        if is_64_bit:
+            OPcodeParser = opcache_parser_64.OPcodeParser
+        else:
+            OPcodeParser = opcache_parser.OPcodeParser
+
         op = OPcodeParser.get_opcode_name(opcode['opcode'])
 
         # Parser
@@ -48,6 +54,10 @@ class OPcode(Tree):
         self.add_node(result_node, parent=id_with_hash + "_opcode")
 
 class OPcacheDisassembler():
+
+    def __init__(self, is_64_bit):
+        self.is_64_bit = is_64_bit
+
     """ Disassembles a given file """
 
     def syntax_highlight(self, line):
@@ -150,7 +160,10 @@ class OPcacheDisassembler():
         """
 
         # Create parser
-        opcache = OPcacheParser(filename)
+        if self.is_64_bit:
+            opcache = opcache_parser_64.OPcacheParser(filename)
+        else:
+            opcache = opcache_parser.OPcacheParser(filename)
 
         # Create syntax tree
         ast = Tree()
@@ -166,7 +179,7 @@ class OPcacheDisassembler():
 
         # Main OP array
         for idx, opcode in enumerate(main_op_array['opcodes']):
-            opcode = OPcode(str(idx), opcode, main_op_array, opcache)
+            opcode = OPcode(str(idx), opcode, main_op_array, opcache, is_64_bit)
             ast.paste("main_op_array", opcode)
 
         # Function Table
@@ -180,7 +193,7 @@ class OPcacheDisassembler():
             # Iterate over opcodes
             op_array = function['val']['op_array']
             for idx, opcode in enumerate(op_array['opcodes']):
-                opcode = OPcode(str(idx), opcode, op_array, opcache)
+                opcode = OPcode(str(idx), opcode, op_array, opcache, self.is_64_bit)
                 ast.paste(function_id, opcode)
 
         # Class Table
@@ -235,8 +248,8 @@ class OPcacheDisassembler():
 
         ast.show(key=lambda a: "")
 
-    def disassemble(self, file):
-        disassembler = OPcacheDisassembler()
+    def disassemble(self, file, is_64_bit):
+        disassembler = OPcacheDisassembler(is_64_bit)
         ast = disassembler.create_ast(file)
         final = ""
         final += disassembler.convert_branch_to_pseudo_code(ast, 'class_table', 0)
@@ -248,17 +261,19 @@ class OPcacheDisassembler():
 def show_help():
     """ Show the help menu """
 
-    print "Usage : {0} [-tc] [file]".format(sys.argv[0])
+    print "Usage : {0} [-tc] [-a(32|64)] [file]".format(sys.argv[0])
     print " " * 4 + "-t Print syntax tree"
     print " " * 4 + "-c Print pseudocode"
+    print " " * 4 + "-a Architecture (32bit or 64bit)"
 
 
 if __name__ == "__main__":
 
     show_pseudo_code = False
     show_syntax_tree = False
+    is_64_bit = False
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         show_help()
         exit(0)
     else:
@@ -268,7 +283,13 @@ if __name__ == "__main__":
         if '-t' in sys.argv:
             show_syntax_tree = True
 
-    disassembler = OPcacheDisassembler()
+        if '-a32' in sys.argv:
+            is_64_bit = False
+
+        if '-a64' in sys.argv:
+            is_64_bit = True
+
+    disassembler = OPcacheDisassembler(is_64_bit)
     ast = disassembler.create_ast(sys.argv[len(sys.argv) - 1])
 
     if show_syntax_tree:
