@@ -179,7 +179,7 @@ class OPcacheDisassembler():
 
         # Main OP array
         for idx, opcode in enumerate(main_op_array['opcodes']):
-            opcode = OPcode(str(idx), opcode, main_op_array, opcache, is_64_bit)
+            opcode = OPcode(str(idx), opcode, main_op_array, opcache, self.is_64_bit)
             ast.paste("main_op_array", opcode)
 
         # Function Table
@@ -248,8 +248,8 @@ class OPcacheDisassembler():
 
         ast.show(key=lambda a: "")
 
-    def disassemble(self, file, is_64_bit):
-        disassembler = OPcacheDisassembler(is_64_bit)
+    def disassemble(self, file):
+        disassembler = OPcacheDisassembler(self.is_64_bit)
         ast = disassembler.create_ast(file)
         final = ""
         final += disassembler.convert_branch_to_pseudo_code(ast, 'class_table', 0)

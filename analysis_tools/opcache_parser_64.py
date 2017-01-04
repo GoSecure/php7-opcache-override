@@ -35,8 +35,8 @@ def Z_Val(name, callback = None, unserialize = True):
                   ),
                   "u2" / Int32ul,
 
-                  If(lambda z: z.u1.type == 6 and unserialize,
-                     "string" / Pointer(lambda z: (z.value.w1 & ~1) +
+                  "string" / If(lambda z: z.u1.type == 6 and unserialize,
+                     Pointer(lambda z: (z.value.w1 & ~1) +
                                       (meta['mem_size'] if meta['str_size'] != 0 else 0) +
                                       Meta.sizeof(),
                                       Zend_String("string")
