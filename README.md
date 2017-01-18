@@ -86,3 +86,9 @@ To setup the demo, run the following two commands :
 
     sudo ./setup.sh
     php -S 127.0.0.1:8080 -c php.ini
+
+Note that on some Linux based systems, the opcache subsystem is compiled out of
+the PHP core and must be dynamically loaded. This can be performed by adding
+the following statement under the `[PHP]` directive:
+
+    zend_extension=opcache.so
