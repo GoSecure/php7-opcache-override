@@ -264,7 +264,7 @@ def show_help():
     print "Usage : {0} [-tc] [-a(32|64)] [file]".format(sys.argv[0])
     print " " * 4 + "-t Print syntax tree"
     print " " * 4 + "-c Print pseudocode"
-    print " " * 4 + "-a Architecture (32bit or 64bit)"
+    print " " * 4 + "-a Architecture (-a32 for 32bit or -a64 for 64bit)"
 
 
 if __name__ == "__main__":
