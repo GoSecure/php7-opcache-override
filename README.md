@@ -2,6 +2,8 @@
 
 This project contains the demo website and the tools presented in the following blog posts :
 
+ - HackFest presentation: [slides](https://docs.google.com/presentation/d/18y60Xy0eVeUnBXIH_t3ikfly_uyYbtfI6zAuKCHtlac/edit?usp=sharing)
+   and [video](https://www.youtube.com/watch?v=yLpsIWh7rvU)
  - http://gosecure.net/2016/04/27/binary-webshell-through-opcache-in-php-7/
  - http://gosecure.net/2016/05/26/detecting-hidden-backdoors-in-php-opcache/
 
