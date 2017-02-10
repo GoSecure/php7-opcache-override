@@ -55,29 +55,38 @@ class OPcode(Tree):
 
 class OPcacheDisassembler():
 
-    def __init__(self, is_64_bit):
+    def __init__(self, is_64_bit, color_output):
         self.is_64_bit = is_64_bit
+        self.color_output = color_output
 
     """ Disassembles a given file """
+
+
+    def _color(self, text, color):
+        if self.color_output:
+            return colored(text, color)
+        else:
+            return text
+
 
     def syntax_highlight(self, line):
         """ Syntax highlighting for a disassembled Opcache line """
 
         # JMP
         if "JMP" in line and "->" in line:
-            line = re.sub(" (JMP.+)\(", colored(' \\1', 'green') + "(", line)
+            line = re.sub(" (JMP.+)\(", self._color(' \\1', 'green') + "(", line)
 
         # Variables
-        line = re.sub("(\$\d+)", colored('\\1', 'cyan'), line)
+        line = re.sub("(\$\d+)", self._color('\\1', 'cyan'), line)
 
         # Temporary variables
-        line = re.sub("(~\d+)", colored('\\1', 'red'), line)
+        line = re.sub("(~\d+)", self._color('\\1', 'red'), line)
 
         # Compiled variables
-        line = re.sub("(!\d+)", colored('\\1', 'yellow'), line)
+        line = re.sub("(!\d+)", self._color('\\1', 'yellow'), line)
 
         # Strings
-        line = re.sub("['\"](.+)['\"]", colored("'\\1'", 'blue'), line)
+        line = re.sub("['\"](.+)['\"]", self._color("'\\1'", 'blue'), line)
 
         return line
 
@@ -264,6 +273,7 @@ def show_help():
     print "Usage : {0} [-tc] [-a(32|64)] [file]".format(sys.argv[0])
     print " " * 4 + "-t Print syntax tree"
     print " " * 4 + "-c Print pseudocode"
+    print " " * 4 + "-n Disables colored output"
     print " " * 4 + "-a Architecture (-a32 for 32bit or -a64 for 64bit)"
 
 
@@ -272,6 +282,7 @@ if __name__ == "__main__":
     show_pseudo_code = False
     show_syntax_tree = False
     is_64_bit = False
+    color_output = True
 
     if len(sys.argv) < 4:
         show_help()
@@ -289,7 +300,10 @@ if __name__ == "__main__":
         if '-a64' in sys.argv:
             is_64_bit = True
 
-    disassembler = OPcacheDisassembler(is_64_bit)
+        if '-n' in sys.argv:
+            color_output = False
+
+    disassembler = OPcacheDisassembler(is_64_bit, color_output)
     ast = disassembler.create_ast(sys.argv[len(sys.argv) - 1])
 
     if show_syntax_tree:
