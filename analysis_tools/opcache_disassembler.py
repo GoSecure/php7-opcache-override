@@ -55,7 +55,7 @@ class OPcode(Tree):
 
 class OPcacheDisassembler():
 
-    def __init__(self, is_64_bit, color_output):
+    def __init__(self, is_64_bit, color_output=None):
         self.is_64_bit = is_64_bit
         self.color_output = color_output
 
