@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2016 GoSecure Inc.
+# Copyright (c) 2016, 2019 GoSecure Inc.
 
 import sys
+from packaging import version
 import re
 import requests
 from md5 import md5
@@ -29,6 +30,7 @@ if php_version == None:
     exit(0)
 
 php_version = php_version.group(1)
+php_greater_74 = (version.parse("7.4.0") < version.parse(php_version.split("-")[0]))
 
 # Zend Extension Build ID
 zend_extension_id = re.search('<tr><td class="e">Zend Extension Build </td><td class="v">(.*) </td></tr>', text)
@@ -50,7 +52,21 @@ if architecture == "x86_64":
 else:
     bin_id_suffix = "44444"
 
-zend_bin_id = "BIN_SIZEOF_CHAR" + bin_id_suffix
+# With PHP 7.4 they fixed the undefined macro that did the weird bin ID
+if php_greater_74:
+    zend_bin_id = "BIN_" + bin_id_suffix
+else:
+    zend_bin_id = "BIN_SIZEOF_CHAR" + bin_id_suffix
+
+# Alternate Bin ID, see #5
+if not php_greater_74:
+    if architecture == "x86_64":
+        alt_bin_id_suffix = "148888"
+    else:
+        alt_bin_id_suffix = "144444"
+
+    alt_zend_bin_id = "BIN_" + alt_bin_id_suffix
+
 
 # Logging
 print "PHP version : " + php_version
@@ -62,3 +78,8 @@ digest = md5(php_version + zend_extension_id + zend_bin_id).hexdigest()
 print "------------"
 print "System ID : " + digest
 
+if not php_greater_74:
+    alt_digest = md5(php_version + zend_extension_id + alt_zend_bin_id).hexdigest()
+    print "PHP lower than 7.4 detected, an alternate Bin ID is possible:"
+    print "Alternate Zend Bin ID : " + alt_zend_bin_id
+    print "Alternate System ID : " + alt_digest
