@@ -94,3 +94,14 @@ the PHP core and must be dynamically loaded. This can be performed by adding
 the following statement under the `[PHP]` directive:
 
     zend_extension=opcache.so
+
+## Dockerized setup
+
+Due to construct 2.9's API breakage, I created a docker container to run this project using construct 2.8. To use:
+
+    docker build -t opcache_analysis .
+    docker run -it --rm opcache_analysis sh
+
+Then inside the busybox shell of the container you can use the tools, for example:
+
+    python ./analysis_tools/opcache_disassembler.py -c -a64 index.php.bin
