@@ -131,8 +131,9 @@ def Zend_Refcounted_H(name):
 def Zend_String(name):
     return name / Struct(Zend_Refcounted_H("gc"),
                   "h" / Int32ul,
-                  "len" / Int32ul,
-                  "val" / String(this.len))
+                  "val" / PascalString(Int32ul, "utf8"))
+                  #"len" / Int32ul,
+                  #"val" / PaddedString(this.len))
 
 def Zend_Arg_Info(name):
     return name / Struct(Pointer_To("name", Zend_String("name")),
@@ -214,8 +215,8 @@ Script = "script" / Struct(Pointer_To("filename", Zend_String("filename"), False
                 Hash_Table("function_table", unserialize_zend_function),
                 Hash_Table("class_table", unserialize_class))
 
-Meta = "meta" / Struct("magic" / String(8),
-              "system_id" / String(32),
+Meta = "meta" / Struct("magic" / PaddedString(8, "ascii"),
+              "system_id" / PaddedString(32, "ascii"),
               "mem_size" / Int32ul,
               "str_size" / Int32ul,
               "script_offset" / Int32ul,
