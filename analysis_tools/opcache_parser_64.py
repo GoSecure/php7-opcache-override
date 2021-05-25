@@ -351,7 +351,7 @@ class OPcacheParser():
                 file_path : The path of the file to parse
         """
 
-        with open(file_path, "r") as file:
+        with open(file_path, "rb") as file:
             self.stream = file.read()
 
         self.parsed = OPcacheParser.parse_stream(self.stream)
