@@ -23,7 +23,7 @@ def Z_Val(name, callback = None, unserialize = True):
 
     callback_name = ""
     if callback == unserialize_zend_function:
-	callback_name = "op_array"
+        callback_name = "op_array"
     elif callback == unserialize_class:
         callback_name = "class"
 

@@ -240,13 +240,13 @@ class OPcacheDisassembler():
         """
 
         for line in self.convert_branch_to_pseudo_code(ast, 'class_table', 0).split("\n"):
-            print self.syntax_highlight(line)
+            print(self.syntax_highlight(line))
 
         for line in  self.convert_branch_to_pseudo_code(ast, 'function_table', 0).split("\n"):
-            print self.syntax_highlight(line)
+            print(self.syntax_highlight(line))
 
         for line in self.convert_branch_to_pseudo_code(ast, 'main_op_array', 0).split("\n"):
-            print self.syntax_highlight(line)
+            print(self.syntax_highlight(line))
 
     def print_syntax_tree(self, ast):
         """ Print the syntax tree
@@ -270,11 +270,11 @@ class OPcacheDisassembler():
 def show_help():
     """ Show the help menu """
 
-    print "Usage : {0} [-tc] [-a(32|64)] [file]".format(sys.argv[0])
-    print " " * 4 + "-t Print syntax tree"
-    print " " * 4 + "-c Print pseudocode"
-    print " " * 4 + "-n Disables colored output"
-    print " " * 4 + "-a Architecture (-a32 for 32bit or -a64 for 64bit)"
+    print("Usage : {0} [-tc] [-a(32|64)] [file]".format(sys.argv[0]))
+    print(" " * 4 + "-t Print syntax tree")
+    print(" " * 4 + "-c Print pseudocode")
+    print(" " * 4 + "-n Disables colored output")
+    print(" " * 4 + "-a Architecture (-a32 for 32bit or -a64 for 64bit)")
 
 
 if __name__ == "__main__":
